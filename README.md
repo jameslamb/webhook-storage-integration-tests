@@ -2,9 +2,27 @@
 
 This is a temporary repo with integration tests for INSERT PR LINK.
 
+#### Contents
+
+1. [Installation](#installation)
+1. [DropBox](#dropbox)
+    * [local](#dropbox-local)
+    * [Prefect Cloud](#dropbox-cloud)
+1. [When `get_flow()` depends on `build()`](#get-flow)
+
+## Installation
+
+To install `prefect` from that PR:
+
+```shell
+pip install git+https://github.com/jameslamb/prefect@feat/webhook-storage
+```
+
 ## DropBox
 
 This section describes how to test that `WebHook` storage can be used to store flows with DropBox.
+
+### Local <a name="dropbox-local"></a>
 
 **Roundtripping**
 
@@ -33,7 +51,7 @@ python test-dropbox.py
 7. Log in to dropbox.com. Confirm that you see a file `/Apps/prefect-test-app/{that_id}.flow`.
 
 
-## Testing with Prefect Cloud
+### Testing with Prefect Cloud <a name="prefect-cloud"></a>
 
 To test with Prefect Cloud, get a Prefect `USER` token, and log in.
 
@@ -111,3 +129,46 @@ In the Prefect Cloud UI, look at the logs for this flow's run. They should end l
 
 * https://www.dropbox.com/developers/documentation/http/documentation#auth-token-from_oauth1
 * https://www.dropbox.com/developers/reference/auth-types#app
+
+
+## When `get_flow()` depends on `build()`
+
+This section can be used to test that `WebHook` storage is able to accomodate the case where `get_flow()` needs some details that can only be determined by running `build()`.
+
+In this example, I've written a small service with the following endpoints:
+
+* `POST /upload`: given the content of a flow, assign it a unique id and store it under that id
+* `GET /flows/{flow_id}`: get the content of a flow by id
+
+In this case, `build()` needs to run `POST /upload`, then update the details of the flow with the `flow_id` that is returned.
+
+1. Run the service locally. It will serve on `127.0.0.0:8080`
+
+```shell
+python app.py
+```
+
+2. In another terminal, test storing and retrieving the flow.
+
+```shell
+python test-build-details.py
+```
+
+You should see something like this in the app's logs
+
+```text
+ * Running on http://0.0.0.0:8080/ (Press CTRL+C to quit)
+127.0.0.1 - - [20/Jul/2020 00:52:10] "POST /upload HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jul/2020 00:52:10] "GET /flows/d4d93341-f94b-4f49-a6ac-9ecbc263f4d9 HTTP/1.1" 200 -
+```
+
+And something like this in the Python script's logs:
+
+```text
+Result check: OK
+[2020-07-20 05:52:10] INFO - prefect.WebHook | Uploading flow 'test-flow'
+[2020-07-20 05:52:10] INFO - prefect.WebHook | Successfully uploaded flow 'test-flow'
+[2020-07-20 05:52:10] INFO - prefect.WebHook | Retrieving flow
+```
+
+
