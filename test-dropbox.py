@@ -2,11 +2,9 @@ import cloudpickle
 import json
 import os
 import random
-import requests
-import uuid
 
 import prefect
-from prefect import task, Task, Flow
+from prefect import task, Flow
 from prefect.environments.storage import WebHook
 
 FLOW_NAME = "test-flow"
@@ -46,15 +44,11 @@ flow.storage = WebHook(
         "url": "https://content.dropboxapi.com/2/files/download",
         "headers": {
             "Content-Type": "application/octet-stream",
-            "Dropbox-API-Arg": json.dumps(
-                {"path": f"{DBOX_APP_FOLDER}/{flow.name}.flow"}
-            ),
+            "Dropbox-API-Arg": json.dumps({"path": f"{DBOX_APP_FOLDER}/{flow.name}.flow"}),
         },
     },
     get_flow_http_method="POST",
-    build_secret_config={
-        "Authorization": {"name": "DBOX_OAUTH2_TOKEN", "type": "environment"}
-    },
+    build_secret_config={"Authorization": {"name": "DBOX_OAUTH2_TOKEN", "type": "environment"}},
 )
 
 flow.storage.add_flow(flow)

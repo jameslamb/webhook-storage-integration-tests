@@ -9,6 +9,8 @@ This is a temporary repo with integration tests for INSERT PR LINK.
     * [local](#dropbox-local)
     * [Prefect Cloud](#dropbox-cloud)
 1. [When `get_flow()` depends on `build()`](#get-flow)
+    * [local](#get-flow-local)
+    * [Prefect Cloud](#get-flow-cloud)
 
 ## Installation
 
@@ -51,7 +53,7 @@ python test-dropbox.py
 7. Log in to dropbox.com. Confirm that you see a file `/Apps/prefect-test-app/{that_id}.flow`.
 
 
-### Testing with Prefect Cloud <a name="prefect-cloud"></a>
+### Testing with Prefect Cloud <a name="dropbox-cloud"></a>
 
 To test with Prefect Cloud, get a Prefect `USER` token, and log in.
 
@@ -69,15 +71,7 @@ prefect create project ${PROJECT_NAME}
 Register the flow
 
 ```python
-import cloudpickle
-
-with open("tmp.flow", "rb") as f:
-    flow = cloudpickle.loads(f.read())
-
-flow.register(
-    project_name="test-project",
-    build=True
-)
+python register-flow.py
 ```
 
 You should see logs like this:
@@ -97,7 +91,9 @@ prefect agent start \
 In a separate shell, run the following:
 
 ```shell
-prefect run cloud --name test-flow --project test-project
+prefect run cloud \
+    --name test-flow \
+    --project test-project
 ```
 
 You should see logs like this in the agent
@@ -131,7 +127,7 @@ In the Prefect Cloud UI, look at the logs for this flow's run. They should end l
 * https://www.dropbox.com/developers/reference/auth-types#app
 
 
-## When `get_flow()` depends on `build()`
+## When `get_flow()` depends on `build()` <a name="get-flow"></a>
 
 This section can be used to test that `WebHook` storage is able to accomodate the case where `get_flow()` needs some details that can only be determined by running `build()`.
 
@@ -141,6 +137,8 @@ In this example, I've written a small service with the following endpoints:
 * `GET /flows/{flow_id}`: get the content of a flow by id
 
 In this case, `build()` needs to run `POST /upload`, then update the details of the flow with the `flow_id` that is returned.
+
+### Local <a name="get-flow-local"></a>
 
 1. Run the service locally. It will serve on `127.0.0.0:8080`
 
@@ -171,4 +169,54 @@ Result check: OK
 [2020-07-20 05:52:10] INFO - prefect.WebHook | Retrieving flow
 ```
 
+### Prefect Cloud <a name="get-flow-cloud"></a>
 
+Repeat the setup steps for Prefect Cloud [from the DropBox example](#dropbox-cloud), abbreviated here.
+
+In one shell:
+
+```shell
+prefect agent start \
+    --token ${PREFECT_RUNNER_TOKEN} \
+    --label webhook-flow-storage
+```
+
+In another shell:
+
+```shell
+python test-build-details.py
+prefect auth login -t ${PREFECT_USER_TOKEN}
+python register-flow.py
+
+prefect run cloud \
+    --name test-flow \
+    --project test-project
+```
+
+After a few seconds, you should see evidence that this is working correctly.
+
+**agent**
+
+The `LocalAgent` should have been asked to run the flow
+
+```text
+[2020-07-20 06:05:46,246] INFO - agent | Found 1 flow run(s) to submit for execution.
+[2020-07-20 06:05:46,390] INFO - agent | Deploying flow run 1ebb481c-7aff-45a5-9103-e05c419b8a08
+```
+
+**app logs**
+
+The little Flask app should have gotten a new request for the flow
+
+```text
+127.0.0.1 - - [20/Jul/2020 01:05:47] "GET /flows/1f08f4bc-f427-459e-94a3-9e5f756062ec HTTP/1.1" 200 -
+```
+
+**Prefect Cloud**
+
+You should see a new, successful flow run in the Prefect Cloud UI. The logs for that run should end with something like this.
+
+```text
+20 July 2020,01:05:48   prefect.CloudFlowRunner INFO    Flow run SUCCESS: all reference tasks succeeded
+20 July 2020,01:05:48   prefect.CloudFlowRunner DEBUG   Flow 'test-flow': Handling state change from Running to Success
+```

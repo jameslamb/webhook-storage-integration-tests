@@ -14,12 +14,12 @@ app = flask.Flask(__name__)
 CACHE = {}
 
 
-@app.route('/')
+@app.route("/")
 def hello():
     return "Hello World!"
 
 
-@app.route('/upload', methods=["POST"])
+@app.route("/upload", methods=["POST"])
 def upload_file():
     content = flask.request.get_data()
     flow_id = str(uuid.uuid4())
@@ -27,12 +27,12 @@ def upload_file():
     return flask.jsonify(id=flow_id)
 
 
-@app.route('/flows', methods=["GET"])
+@app.route("/flows", methods=["GET"])
 def list_files():
     return flask.jsonify(ids=list(CACHE.keys()))
 
 
-@app.route('/flows/<flow_id>', methods=["GET"])
+@app.route("/flows/<flow_id>", methods=["GET"])
 def fetch_flow(flow_id):
     return CACHE[flow_id]
 
