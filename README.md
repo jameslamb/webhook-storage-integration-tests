@@ -5,10 +5,13 @@ This is a temporary repo with integration tests for INSERT PR LINK.
 #### Contents
 
 1. [Installation](#installation)
-1. [DropBox](#dropbox)
+1. [Example 1: DropBox](#dropbox)
     * [local](#dropbox-local)
     * [Prefect Cloud](#dropbox-cloud)
-1. [When `get_flow()` depends on `build()`](#get-flow)
+1. [Example 2: When `get_flow()` depends on `build()`](#get-flow)
+    * [local](#get-flow-local)
+    * [Prefect Cloud](#get-flow-cloud)
+1. [Example 3: flow stored as script](#script)
     * [local](#get-flow-local)
     * [Prefect Cloud](#get-flow-cloud)
 
@@ -20,7 +23,7 @@ To install `prefect` from that PR:
 pip install git+https://github.com/jameslamb/prefect@feat/webhook-storage
 ```
 
-## DropBox
+## DropBox <a name="dropbox"></a>
 
 This section describes how to test that `WebHook` storage can be used to store flows with DropBox.
 
@@ -220,3 +223,19 @@ You should see a new, successful flow run in the Prefect Cloud UI. The logs for 
 20 July 2020,01:05:48   prefect.CloudFlowRunner INFO    Flow run SUCCESS: all reference tasks succeeded
 20 July 2020,01:05:48   prefect.CloudFlowRunner DEBUG   Flow 'test-flow': Handling state change from Running to Success
 ```
+
+## Flow stored as script <a name="script"></a>
+
+This section describes how to test that `Webhook` storage works for a flow stored as a script (`stored_as_script=True`).
+
+### Local <a name="script-local"></a>
+
+Follow all the steps from [DropBox local](#dropbox-local), but run this script instead of `test-dropbox.py`:
+
+```shell
+python test-dropbox.py
+```
+
+### Prefect Cloud <a name="script-cloud"></a>
+
+Repeat all the steps from [the DropBox section on Prefect Cloud](#dropbox-cloud).

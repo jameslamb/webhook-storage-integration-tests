@@ -1,2 +1,4 @@
 *.env
 *.flow
+*.pyc
+__pycache__/
