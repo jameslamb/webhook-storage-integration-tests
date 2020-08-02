@@ -1,5 +1,5 @@
 """
-This script is used to test creating `WebHook`
+This script is used to test creating `Webhook`
 storage for use with a service for which
 the get_flow() details can't be known until
 after you upload the flow.
@@ -13,7 +13,7 @@ import os
 import random
 
 from prefect import task, Flow
-from prefect.environments.storage import WebHook
+from prefect.environments.storage import Webhook
 
 BASE_URL = "http://127.0.0.1:8080"
 BUILD_ROUTE = f"{BASE_URL}/upload"
@@ -29,11 +29,11 @@ with Flow("test-flow") as flow:
     random_number()
 
 
-flow.storage = WebHook(
-    build_kwargs={"url": BUILD_ROUTE, "headers": {"Content-Type": "application/octet-stream"}},
-    build_http_method="POST",
-    get_flow_kwargs={"url": GET_ROUTE, "headers": {"Accept": "application/octet-stream"}},
-    get_flow_http_method="GET",
+flow.storage = Webhook(
+    build_request_kwargs={"url": BUILD_ROUTE, "headers": {"Content-Type": "application/octet-stream"}},
+    build_request_http_method="POST",
+    get_flow_request_kwargs={"url": GET_ROUTE, "headers": {"Accept": "application/octet-stream"}},
+    get_flow_request_http_method="GET",
 )
 
 flow.storage.add_flow(flow)

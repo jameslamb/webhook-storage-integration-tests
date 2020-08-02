@@ -6,7 +6,7 @@ import cloudpickle
 import json
 import os
 
-from prefect.environments.storage import WebHook
+from prefect.environments.storage import Webhook
 from prefect import Flow
 
 from sample_flow import flow
@@ -22,8 +22,8 @@ print(f"flow name: '{flow.name}'")
 
 
 DBOX_APP_FOLDER = "/Apps/prefect-test-app"
-flow.storage = WebHook(
-    build_kwargs={
+flow.storage = Webhook(
+    build_request_kwargs={
         "url": "https://content.dropboxapi.com/2/files/upload",
         "headers": {
             "Content-Type": "application/octet-stream",
@@ -35,18 +35,19 @@ flow.storage = WebHook(
                     "strict_conflict": True,
                 }
             ),
+            "Authorization": "Bearer ${DBOX_OAUTH2_TOKEN}"
         },
     },
-    build_http_method="POST",
-    get_flow_kwargs={
+    build_request_http_method="POST",
+    get_flow_request_kwargs={
         "url": "https://content.dropboxapi.com/2/files/download",
         "headers": {
             "Accept": "application/octet-stream",
             "Dropbox-API-Arg": json.dumps({"path": f"{DBOX_APP_FOLDER}/{flow.name}.py"}),
+            "Authorization": "Bearer ${DBOX_OAUTH2_TOKEN}"
         },
     },
-    get_flow_http_method="POST",
-    build_secret_config={"Authorization": {"name": "DBOX_OAUTH2_TOKEN", "type": "environment"}},
+    get_flow_request_http_method="POST",
     stored_as_script=True,
     flow_script_path=flow_script_path
 )
@@ -65,7 +66,7 @@ with open(flow_file, "wb") as f:
 if __name__ == "__main__":
 
     built_storage = flow.storage.build()
-    assert isinstance(built_storage, WebHook)
+    assert isinstance(built_storage, Webhook)
 
     retrieved_flow = flow.storage.get_flow()
     assert isinstance(retrieved_flow, Flow)

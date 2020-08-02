@@ -25,7 +25,7 @@ pip install git+https://github.com/jameslamb/prefect@feat/webhook-storage
 
 ## DropBox <a name="dropbox"></a>
 
-This section describes how to test that `WebHook` storage can be used to store flows with DropBox.
+This section describes how to test that `Webhook` storage can be used to store flows with DropBox.
 
 ### Local <a name="dropbox-local"></a>
 
@@ -38,11 +38,10 @@ This section describes how to test that `WebHook` storage can be used to store f
     - all files will end up in a folder with the same name as the app
     - in this case, "/Apps/prefect-test-app"
 4. generate an Oauth2 access token and save it somewhere
-5. Put that oauth2 token in an environment variable, prefixed with "Bearer "
+5. Put that oauth2 token in an environment variable
 
 ```shell
-DBOX_TOKEN="your token here"
-export DBOX_OAUTH2_TOKEN="Bearer ${DBOX_TOKEN}"
+export DBOX_OAUTH2_TOKEN="your token here"
 ```
 
 6. Run the test script
@@ -51,7 +50,7 @@ export DBOX_OAUTH2_TOKEN="Bearer ${DBOX_TOKEN}"
 python test-dropbox.py
 ```
 
-> [2020-07-20 04:10:32] INFO - prefect.WebHook | Uploading flow 'test-flow'
+> [2020-07-20 04:10:32] INFO - prefect.Webhook | Uploading flow 'test-flow'
 
 7. Log in to dropbox.com. Confirm that you see a file `/Apps/prefect-test-app/{that_id}.flow`.
 
@@ -79,9 +78,9 @@ python register-flow.py
 
 You should see logs like this:
 
-> [2020-07-20 04:23:33] INFO - prefect.WebHook | Uploading flow 'test-flow'
+> [2020-07-20 04:23:33] INFO - prefect.Webhook | Uploading flow 'test-flow'
 
->  [2020-07-20 04:23:34] INFO - prefect.WebHook | Successfully uploaded flow 'test-flow'
+>  [2020-07-20 04:23:34] INFO - prefect.Webhook | Successfully uploaded flow 'test-flow'
 
 Go to Prefect Cloud and get a `RUNNER` token
 
@@ -132,7 +131,7 @@ In the Prefect Cloud UI, look at the logs for this flow's run. They should end l
 
 ## When `get_flow()` depends on `build()` <a name="get-flow"></a>
 
-This section can be used to test that `WebHook` storage is able to accomodate the case where `get_flow()` needs some details that can only be determined by running `build()`.
+This section can be used to test that `Webhook` storage is able to accomodate the case where `get_flow()` needs some details that can only be determined by running `build()`.
 
 In this example, I've written a small service with the following endpoints:
 
@@ -167,9 +166,9 @@ And something like this in the Python script's logs:
 
 ```text
 Result check: OK
-[2020-07-20 05:52:10] INFO - prefect.WebHook | Uploading flow 'test-flow'
-[2020-07-20 05:52:10] INFO - prefect.WebHook | Successfully uploaded flow 'test-flow'
-[2020-07-20 05:52:10] INFO - prefect.WebHook | Retrieving flow
+[2020-07-20 05:52:10] INFO - prefect.Webhook | Uploading flow 'test-flow'
+[2020-07-20 05:52:10] INFO - prefect.Webhook | Successfully uploaded flow 'test-flow'
+[2020-07-20 05:52:10] INFO - prefect.Webhook | Retrieving flow
 ```
 
 ### Prefect Cloud <a name="get-flow-cloud"></a>

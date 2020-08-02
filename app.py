@@ -1,5 +1,5 @@
 """
-Simple app to test using WebHook storage with
+Simple app to test using Webhook storage with
 a service where the details to retrieve the flow
 are only known after building it.
 
